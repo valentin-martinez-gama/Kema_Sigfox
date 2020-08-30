@@ -1,25 +1,28 @@
 /*
-Kema_Sigfox.h  - Libreria para la comunicación por Sigfox con el Devkit de NXTIoT
-								 adaptado por Valentín Martínez para - Kema Soluciones
-  21 de Enero 2020
-  Para uso de Kema.
+Kema_Sigfox.h  - Libreria para la comunicación por serial con el modulo Wisol de
+							  Sigfox serial.  Valentín Martínez Gama para - Kema Soluciones
+  29 de Enero 2020
+	Version 1.0
 */
+
 #ifndef Kema_Sigfox_h
 #define Kema_Sigfox_h
 
 #include "Arduino.h"
 
-#define enable_module 7
-
-class Kema_Sigfox
-{
+class Kema_Sigfox {
 	public:
-	Kema_Sigfox();
-	void initpayload();
-	void sendmessage();
-	void addint(int varI);
-	void addfloat(float varF);
-	String bufer; //variable donde guardaremos nuestro payload
+
+		Kema_Sigfox(int pin_enable_wisol_module);
+
+		void initpayload();
+		void sendmessage();
+		void addint(int varI);
+		void addfloat(float varF);
+
+	private:
+			int _enablePin;
+			string _ATmessage; //variable donde guardaremos nuestro payload
 };
 
 #endif
