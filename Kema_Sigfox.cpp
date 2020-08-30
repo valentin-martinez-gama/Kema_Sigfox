@@ -15,12 +15,12 @@ Kema_Sigfox::Kema_Sigfox(int pin_enable_wisol_module)
 	_enablePin = pin_enable_wisol_module;
 }
 
-void Kema_Sigfox::initpayload()
+void Kema_Sigfox::initPayload()
 {
 	_ATmessage="AT$SF=";
 }
 
-void Kema_Sigfox::sendmessage()
+void Kema_Sigfox::sendMessage()
 {
   //agregamos el salto de linea "\n"
   _ATmessage+="\n";
@@ -38,7 +38,7 @@ void Kema_Sigfox::sendmessage()
   digitalWrite(_enablePin, LOW);
 }
 
-void Kema_Sigfox::addfloat(float varF) //funcion para agregar flotantes al payload
+void Kema_Sigfox::addFloat(float varFloat) //funcion para agregar flotantes al payload
 {
   byte* a1 = (byte*) &varF;    //convertimos el dato a bytes
   String strFloat;
@@ -58,13 +58,28 @@ void Kema_Sigfox::addfloat(float varF) //funcion para agregar flotantes al paylo
 	_ATmessage+=hexaF;
 }
 
-void Kema_Sigfox::addint(int varI)    //funcion para agregar enteros al payload (hasta 8 bits)
+void Kema_Sigfox::addInt(int varInt, int intSize = 16)    //funcion para agregar enteros al payload (hasta 8 bits)
 {
 	String hexaInt;
   hexaInt = String(varI, HEX);
   //Comprobar si longitud del string creado es 4 Hexas o le faltan 0s a la izquierda
-  while (hexaInt.length()<4) {
+  while (hexaInt.length()<(intSize/4)) {
     hexaInt = String("0"+hexaInt);
   }
 	_ATmessage+=hexaInt;
+}
+
+void Kema_Sigfox::addBoolByte(int varBool)    //funcion para agregar hasta 8 valores bool a un byte del payload.
+
+//Pasar argumentos en la forma Bxxxxxxxx Ej: B1101
+
+// En la decodificación del payload el bit de hasta la derecha es el 0, el segundo mas signifiativo el 1, etc...
+{
+	String hexaBool;
+  hexaBool = String(varBool, HEX);
+  //Comprobar si longitud del string creado es 4 Hexas o le faltan 0s a la izquierda
+  while (hexaBool.length()<4) {
+    hexaBool = String("0"+hexaBool);
+  }
+	_ATmessage+=hexaBool;
 }

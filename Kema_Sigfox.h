@@ -15,10 +15,11 @@ class Kema_Sigfox {
 
 		Kema_Sigfox(int pin_enable_wisol_module);
 
-		void initpayload();
-		void sendmessage();
-		void addint(int varI);
-		void addfloat(float varF);
+		void initPayload();
+		void sendMessage();
+		void addInt(int varInt, int intSize = 16);
+		void addFloat(float varFloat);
+		void addBoolByte(int varBool);
 
 	private:
 			int _enablePin;

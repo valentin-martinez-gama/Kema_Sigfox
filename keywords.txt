@@ -1,0 +1,6 @@
+Kema_Sigfox KEYWORD1
+initPayload  KEYWORD2
+sendMessage KEYWORD2
+addInt  KEYWORD2
+addFloat  KEYWORD2
+addBoolByte KEYWORD2
