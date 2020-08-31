@@ -7,6 +7,8 @@ Kema_Sigfox sigfox(7) para tarjeta NXTIoT_DEVKIT
 
 Funciones disponibles:
 
+setup(Optional enablePin) Inicializa el Serial al modulo Wisol e imprime en consola el DeviceID de la tarjeta
+
 initPayload() Para empezar un nuevo mensaje a Sigfox
 
 addFloat(varfloat)
@@ -18,5 +20,7 @@ addBoolByte(Bxxxxxxxx) Agrega hata ocho valores booleanos en un byte. Funciona c
 sendMessage() Una vez construido el payload manda el mensaje al backend de Sigfox. Maxpayload = 12 bytes.
 
 requestDownlink() Esta funcion hace un sendMessage + un request de downlink de el backend de Sigfox regresando la respuesta en una variable String con el pyaload del downlink en Hex. Regresa un variable string vacia si no hay respuesta.
+
+getTemperature() Pide la temperatura al modulo Wisol y lo regresa en formato int. Los primeros dos digitos corresponden a la temperatura en Celsius y el tercer al primer decimal. Ej: 326 = 32.6 C
 
 Parte de código desarrollado en el repo https://github.com/NXTIoT/NXTIoT_DEVKIT
