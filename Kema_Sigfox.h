@@ -21,9 +21,11 @@ class Kema_Sigfox {
 		void addFloat(float varFloat);
 		void addBoolByte(int varBool);
 
+		String requestDownlink();
+
 	private:
 			int _enablePin;
-			string _ATmessage; //variable donde guardaremos nuestro payload
+			String _ATmessage; //variable donde guardaremos nuestro payload
 };
 
 #endif

@@ -17,4 +17,6 @@ addBoolByte(Bxxxxxxxx) Agrega hata ocho valores booleanos en un byte. Funciona c
 
 sendMessage() Una vez construido el payload manda el mensaje al backend de Sigfox. Maxpayload = 12 bytes.
 
+requestDownlink() Esta funcion hace un sendMessage + un request de downlink de el backend de Sigfox regresando la respuesta en una variable String con el pyaload del downlink en Hex. Regresa un variable string vacia si no hay respuesta.
+
 Parte de código desarrollado en el repo https://github.com/NXTIoT/NXTIoT_DEVKIT
