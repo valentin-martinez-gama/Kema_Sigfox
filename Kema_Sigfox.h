@@ -1,7 +1,7 @@
 /*
 Kema_Sigfox.h  - Libreria para la comunicación por serial con el modulo Wisol de
 							  Sigfox serial.  Valentín Martínez Gama para - Kema Soluciones
-  29 de Enero 2020
+  01 de septiembre del 2020
 	Version 1.0
 */
 

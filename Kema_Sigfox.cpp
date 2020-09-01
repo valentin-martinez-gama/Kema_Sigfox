@@ -82,15 +82,12 @@ void Kema_Sigfox::addFloat(float varFloat) //funcion para agregar flotantes al p
   byte* a1 = (byte*) &varFloat;    //convertimos el dato a bytes
   String strFloat;
   String hexaF="";
-  for(int i=0;i<4;i++)
-  {
+  for(int i=0;i<4;i++) {
     strFloat=String(a1[i], HEX);    //convertimos el valor hex a String
-    if(strFloat.length()<2)
-    {
+    if(strFloat.length()<2){
       hexaF+=0+strFloat;    //si no, se agrega un cero
     }
-    else
-    {
+    else{
       hexaF+=strFloat;    //si esta completo, se copia tal cual
     }
   }
@@ -98,7 +95,7 @@ void Kema_Sigfox::addFloat(float varFloat) //funcion para agregar flotantes al p
 }
 
 
-void Kema_Sigfox::addInt(long varInt, int intSize)    //funcion para agregar enteros al payload (hasta 8 bits)
+void Kema_Sigfox::addInt(long varInt, int intSize)  //Indicar en la variable intSize el numero de bits deseados (debe ser multiplo de 4 )
 {
   String hexaInt;
   hexaInt = String(varInt, HEX);
