@@ -9,13 +9,11 @@
 #include "Kema_Sigfox.h"
 
 int _enablePin;
-#define onDelay 200
-#define offDelay 200
+#define onDelay 300
+#define transmissionDelay 700
 
 Kema_Sigfox::Kema_Sigfox()
-{
-
-}
+{}
 
 void Kema_Sigfox::setup(int pin_enable_wisol_module){
 
@@ -23,35 +21,48 @@ void Kema_Sigfox::setup(int pin_enable_wisol_module){
   pinMode(pin_enable_wisol_module, OUTPUT);   //enable modulo wisol
   _enablePin = pin_enable_wisol_module;
 
-  digitalWrite(_enablePin, HIGH);
-  delay(onDelay);
-  Serial.print("AT$I=10\n");
-  String sigfoxID = Serial.readStringUntil('\n');
-  Serial.println("ID de la tarjeta: ");
-  Serial.println(sigfoxID);
-  delay(offDelay);
-  digitalWrite(_enablePin, LOW);
+  if (verboseSerial==1){
+    digitalWrite(_enablePin, HIGH);
+    _clearSerial();
+    Serial.write("AT$I=10\n");
+    delay(transmissionDelay);
+    digitalWrite(_enablePin, LOW);
+    String sigfoxID = Serial.readStringUntil('\n');
+    Serial.println("ID de la tarjeta: ");
+    Serial.println(sigfoxID);
+
+    digitalWrite(_enablePin, HIGH);
+    _clearSerial();
+    Serial.write("AT$I=11\n");
+    delay(transmissionDelay);
+    digitalWrite(_enablePin, LOW);
+    String sigfoxPAC = Serial.readStringUntil('\n');
+    Serial.println("PAC de la tarjeta: ");
+    Serial.println(sigfoxPAC);
+  }
+
 }
+
 
 void Kema_Sigfox::initPayload()
 {
   _ATmessage="AT$SF=";
 }
 
+
 void Kema_Sigfox::sendMessage()
 {
-  //agregamos el salto de linea "\n"
+  //agregar el caracter que marca el final de un comando AT al modulo"
   _ATmessage+="\n";
-  //*******************
   //Habilitamos el modulo Sigfox
   digitalWrite(_enablePin, HIGH);
-  delay(onDelay);
+  //Limpiar la entrada de Serial del controlador de cualquier ruido generado
+  _clearSerial();
   //Reset del canal para asegurar que manda en la frecuencia correcta
-  Serial.print("AT$RC\n");
-  //************************
+  Serial.write("AT$RC\n");
   //Enviamos la informacion por sigfox
-  Serial.print(_ATmessage);
-  delay(offDelay);
+  Serial.write(_ATmessage.c_str());
+  delay(transmissionDelay);
   //deshabilitamos el modulo Sigfox
   digitalWrite(_enablePin, LOW);
 }
@@ -59,23 +70,12 @@ void Kema_Sigfox::sendMessage()
 String Kema_Sigfox::requestDownlink(){
   //Agregamos al final del payload el comando para hacer un downlink despues de enviar el mensaje
   _ATmessage+=",1";
-  //Nos aseguremos de que el incoming buffer del Serial quede vacio
-  while (Serial.available() > 0) {
-    Serial.read();
-  }
   //Se manda el mensaje y una vez terminada la transmision se revisa el Serial para guardar el payload de respuesa
   sendMessage();
-
-  String downlinkPayload = "";
-
-  while (Serial.available() > 0)
-    if (Serial.peek() != atoi("\n")) {
-        downlinkPayload += Serial.read();
-    }
-    else {
-      return downlinkPayload;
-    }
+  String downlinkPayload = Serial.readStringUntil('\n');
+  return downlinkPayload;
 }
+
 
 void Kema_Sigfox::addFloat(float varFloat) //funcion para agregar flotantes al payload
 {
@@ -97,7 +97,8 @@ void Kema_Sigfox::addFloat(float varFloat) //funcion para agregar flotantes al p
   _ATmessage+=hexaF;
 }
 
-void Kema_Sigfox::addInt(int varInt, int intSize)    //funcion para agregar enteros al payload (hasta 8 bits)
+
+void Kema_Sigfox::addInt(long varInt, int intSize)    //funcion para agregar enteros al payload (hasta 8 bits)
 {
   String hexaInt;
   hexaInt = String(varInt, HEX);
@@ -105,31 +106,78 @@ void Kema_Sigfox::addInt(int varInt, int intSize)    //funcion para agregar ente
   while (hexaInt.length()<(intSize/4)) {
     hexaInt = String("0"+hexaInt);
   }
-  _ATmessage+=hexaInt;
+
+  if (hexaInt.length()>(intSize/4)){
+    hexaInt = hexaInt.substring(hexaInt.length()-(intSize/4));
+    if (verboseSerial==1){
+      Serial.println("WARNING: Your int has been truncated to bits = "+ String(intSize));
+      Serial.println("Check Readme to see how to increase bit limit");
+    }
+  }
+
+    _ATmessage+=hexaInt;
 }
 
-void Kema_Sigfox::addBoolByte(int varBool)    //funcion para agregar hasta 8 valores bool a un byte del payload.
 
+void Kema_Sigfox::addBoolByte(int varBool){
+//funcion para agregar hasta 8 valores bool a un byte del payload.
 //Pasar argumentos en la forma Bxxxxxxxx Ej: B1101
-
 // En la decodificación del payload el bit de hasta la derecha es el 0, el segundo mas signifiativo el 1, etc...
-{
+
   String hexaBool;
   hexaBool = String(varBool, HEX);
-  //Comprobar si longitud del String creado es 4 Hexas o le faltan 0s a la izquierda
-  while (hexaBool.length()<4) {
+  //Comprobar si longitud del String creado es 2 Hexas o le faltan 0s a la izquierda
+  while (hexaBool.length()<2) {
     hexaBool = String("0"+hexaBool);
   }
-  _ATmessage+=hexaBool;
+
+  if (hexaBool.length()>2){
+    hexaBool = hexaBool.substring(hexaBool.length()-2);
+    if (verboseSerial==1){
+      Serial.println("WARNING: Your bool byte has more than 8 bits");
+      Serial.println("Try generating two different bool bytes");
+    }
+  }
+
+    _ATmessage+=hexaBool;
 }
+
 
 int Kema_Sigfox::getTemperature() {
   digitalWrite(_enablePin, HIGH);
-  delay(onDelay);
-  Serial.print("AT$T?\n");
-  int tempWisol = Serial.parseInt();
-  Serial.println("\nTemperatura modulo Wisol:");
-  Serial.println(tempWisol);
-  delay(offDelay);
+  _clearSerial();
+  Serial.write("AT$T?\n");
+  delay(transmissionDelay);
   digitalWrite(_enablePin, LOW);
+  int tempWisol = Serial.parseInt();
+  if(verboseSerial==1){
+    Serial.println("Temperatura modulo Wisol:");
+    Serial.println(tempWisol);
+  }
+  return tempWisol;
+}
+
+
+String Kema_Sigfox::getATData(String ATcmd) {
+  digitalWrite(_enablePin, HIGH);
+  _clearSerial();
+  ATcmd = ATcmd + '\n';
+  Serial.write(ATcmd.c_str());
+  delay(transmissionDelay);
+  digitalWrite(_enablePin, LOW);
+  String dataWisol = Serial.readStringUntil('\n');
+  if(verboseSerial == 1){
+    Serial.println("Data modulo Wisol:");
+    Serial.println(dataWisol);
+  }
+  return dataWisol;
+}
+
+
+void Kema_Sigfox::_clearSerial(){
+  Serial.flush();
+  delay(onDelay);
+  while(Serial.available()>0){
+    Serial.read();
+  }
 }

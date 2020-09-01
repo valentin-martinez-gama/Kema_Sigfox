@@ -5,6 +5,9 @@ Al crear la instancia de la libreria declarar el pin de enable del modulo Wisol 
 
 Kema_Sigfox sigfox(7) para tarjeta NXTIoT_DEVKIT
 
+Setting the verboseSerial variable to 1 will enable a Serial output of the library functions usefull for debugging but that should be turned off for production to avoid having to much traffic and interference in the Serial Bus.
+libInstance.verboseSerial=1
+
 Funciones disponibles:
 
 setup(Optional enablePin) Inicializa el Serial al modulo Wisol e imprime en consola el DeviceID de la tarjeta
