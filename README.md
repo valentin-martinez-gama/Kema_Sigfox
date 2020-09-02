@@ -26,4 +26,6 @@ requestDownlink() Esta funcion hace un sendMessage + un request de downlink de e
 
 getTemperature() Pide la temperatura al modulo Wisol y lo regresa en formato int. Los primeros dos digitos corresponden a la temperatura en Celsius y el tercer al primer decimal. Ej: 326 = 32.6 C
 
+getATData(String Atcmd) Manda el comando AT que se establezca al modulo Wisol y escucha respuesta.
+
 Parte de código desarrollado en el repo https://github.com/NXTIoT/NXTIoT_DEVKIT
