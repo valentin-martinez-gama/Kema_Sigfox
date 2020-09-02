@@ -27,7 +27,9 @@ void Kema_Sigfox::setup(int pin_enable_wisol_module){
     Serial.write("AT$I=10\n");
     delay(transmissionDelay);
     digitalWrite(_enablePin, LOW);
-    String sigfoxID = Serial.readStringUntil('\n');
+    char sigfoxID[9];
+    Serial.readBytesUntil('\n', sigfoxID, 8);
+    sigfoxID[9] = 0;
     Serial.println("ID de la tarjeta: ");
     Serial.println(sigfoxID);
 
@@ -36,7 +38,9 @@ void Kema_Sigfox::setup(int pin_enable_wisol_module){
     Serial.write("AT$I=11\n");
     delay(transmissionDelay);
     digitalWrite(_enablePin, LOW);
-    String sigfoxPAC = Serial.readStringUntil('\n');
+    char sigfoxPAC[17];
+    byte PACsize =Serial.readBytesUntil('\n', sigfoxPAC, 17);
+    sigfoxPAC[PACsize] = 0;
     Serial.println("PAC de la tarjeta: ");
     Serial.println(sigfoxPAC);
   }
@@ -72,7 +76,13 @@ String Kema_Sigfox::requestDownlink(){
   _ATmessage+=",1";
   //Se manda el mensaje y una vez terminada la transmision se revisa el Serial para guardar el payload de respuesa
   sendMessage();
-  String downlinkPayload = Serial.readStringUntil('\n');
+  String  downlinkPayload = Serial.readStringUntil('\n');
+
+  if (verboseSerial==1){
+    Serial.print("Donwlink data : ");
+    Serial.println(downlinkPayload);
+  }
+
   return downlinkPayload;
 }
 
@@ -82,16 +92,21 @@ void Kema_Sigfox::addFloat(float varFloat) //funcion para agregar flotantes al p
   byte* a1 = (byte*) &varFloat;    //convertimos el dato a bytes
   String strFloat;
   String hexaF="";
-  for(int i=0;i<4;i++) {
+  for(int i=0; i<4; i++) {
     strFloat=String(a1[i], HEX);    //convertimos el valor hex a String
-    if(strFloat.length()<2){
+    if(strFloat.length() < 2) {
       hexaF+=0+strFloat;    //si no, se agrega un cero
     }
-    else{
+    else {
       hexaF+=strFloat;    //si esta completo, se copia tal cual
     }
   }
   _ATmessage+=hexaF;
+
+  if (verboseSerial==1){
+    Serial.print("Float payload = ");
+    Serial.println(hexaF);
+  }
 }
 
 
@@ -111,15 +126,23 @@ void Kema_Sigfox::addInt(long varInt, int intSize)  //Indicar en la variable int
       Serial.println("Check Readme to see how to increase bit limit");
     }
   }
-
     _ATmessage+=hexaInt;
+
+    if (verboseSerial==1){
+      Serial.print("Int payload = ");
+      Serial.println(hexaInt);
+    }
 }
 
-
-void Kema_Sigfox::addBoolByte(int varBool){
+// !!! Parece haber errores random que cuentan el 2ndo bit = 0 !!!
+void Kema_Sigfox::addBoolByte(bool boolArray[]){
 //funcion para agregar hasta 8 valores bool a un byte del payload.
-//Pasar argumentos en la forma Bxxxxxxxx Ej: B1101
-// En la decodificación del payload el bit de hasta la derecha es el 0, el segundo mas signifiativo el 1, etc...
+// En la decodificación del payload el primer bit es el 0, el segundo el 1, etc...el ultimo el 7.
+int varBool = 0;
+for(byte b=0; b<=7; b++){
+    varBool <<= 1;
+    varBool |= boolArray[b];
+  }
 
   String hexaBool;
   hexaBool = String(varBool, HEX);
@@ -128,15 +151,12 @@ void Kema_Sigfox::addBoolByte(int varBool){
     hexaBool = String("0"+hexaBool);
   }
 
-  if (hexaBool.length()>2){
-    hexaBool = hexaBool.substring(hexaBool.length()-2);
-    if (verboseSerial==1){
-      Serial.println("WARNING: Your bool byte has more than 8 bits");
-      Serial.println("Try generating two different bool bytes");
-    }
-  }
-
     _ATmessage+=hexaBool;
+
+    if (verboseSerial==1){
+      Serial.print("BoolByte payload = ");
+      Serial.println(hexaBool);
+    }
 }
 
 
