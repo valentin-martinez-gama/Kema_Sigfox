@@ -1,7 +1,7 @@
 /* Ejemplo basico de como usar la libreria Kema_Sigfox para mandar mensajes
    y controlar un modulo Wisol a traves del Serial.
 
-  Por Gerardo Ortiz Cervantes @GeradoOC
+  Por Gerardo Ortiz Cervantes @GeradoOC y Valentin Martinez Gama @valemgama
   1 Septiembre 2020
 */
 
