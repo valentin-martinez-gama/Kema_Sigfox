@@ -6,8 +6,8 @@ Kema_Sigfox	KEYWORD1
 # Methods and Functions (KEYWORD2)
 initPayload	KEYWORD2
 sendMessag	KEYWORD2
-requestDownlink KEYWORD2
-addInt	KEYWORD2
+requestDownlink	KEYWORD2
+addInt		KEYWORD2
 addFloat	KEYWORD2
 addBoolByte	KEYWORD2
 getTemperature	KEYWORD2

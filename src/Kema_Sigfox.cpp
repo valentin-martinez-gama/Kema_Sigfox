@@ -43,6 +43,7 @@ void Kema_Sigfox::setup(int pin_enable_wisol_module){
     sigfoxPAC[PACsize] = 0;
     Serial.println("PAC de la tarjeta: ");
     Serial.println(sigfoxPAC);
+    Serial.println("--------------------------");
   }
 
 }
@@ -69,6 +70,9 @@ void Kema_Sigfox::sendMessage()
   delay(transmissionDelay);
   //deshabilitamos el modulo Sigfox
   digitalWrite(_enablePin, LOW);
+  if (verboseSerial==1){
+    Serial.println("++++++++++++++++++++++++++");
+  }
 }
 
 String Kema_Sigfox::requestDownlink(){
@@ -76,11 +80,15 @@ String Kema_Sigfox::requestDownlink(){
   _ATmessage+=",1";
   //Se manda el mensaje y una vez terminada la transmision se revisa el Serial para guardar el payload de respuesa
   sendMessage();
+  char sendStatus[4];
+  Serial.readBytesUntil('\n', sendStatus, 4);
   String  downlinkPayload = Serial.readStringUntil('\n');
 
   if (verboseSerial==1){
+    Serial.println(sendStatus);
     Serial.print("Donwlink data : ");
     Serial.println(downlinkPayload);
+    Serial.println("++++++++++++++++++++++++++");
   }
 
   return downlinkPayload;
