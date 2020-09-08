@@ -9,7 +9,7 @@
 #include "Kema_Sigfox.h"
 
 int _enablePin;
-#define onDelay 1000
+#define onDelay 500
 #define transmissionDelay 3000
 
 Kema_Sigfox::Kema_Sigfox()
@@ -18,6 +18,7 @@ Kema_Sigfox::Kema_Sigfox()
 void Kema_Sigfox::setup(int pin_enable_wisol_module){
 
   Serial.begin(9600);
+  Serial.setTimeout(1000);
   pinMode(pin_enable_wisol_module, OUTPUT);   //enable modulo wisol
   _enablePin = pin_enable_wisol_module;
 
@@ -52,10 +53,13 @@ void Kema_Sigfox::setup(int pin_enable_wisol_module){
 void Kema_Sigfox::initPayload()
 {
   _ATmessage="AT$SF=";
+  if (verboseSerial==1){
+    Serial.println("+++++++initPayload++++++++");
+  }
 }
 
 
-void Kema_Sigfox::sendMessage()
+void Kema_Sigfox::sendMessage(bool waitToTurnOff)
 {
   //agregar el caracter que marca el final de un comando AT al modulo"
   _ATmessage+="\n";
@@ -66,12 +70,13 @@ void Kema_Sigfox::sendMessage()
   //Reset del canal para asegurar que manda en la frecuencia correcta
   Serial.write("AT$RC\n");
   //Enviamos la informacion por sigfox
+  //Serial.write("\r\n\tSigfox-->");
   Serial.write(_ATmessage.c_str());
+  //Serial.print("\r\n");
   delay(transmissionDelay);
   //deshabilitamos el modulo Sigfox
-  digitalWrite(_enablePin, LOW);
-  if (verboseSerial==1){
-    Serial.println("++++++++++++++++++++++++++");
+  if (waitToTurnOff == 0){
+    digitalWrite(_enablePin, LOW);
   }
 }
 
@@ -79,18 +84,30 @@ String Kema_Sigfox::requestDownlink(){
   //Agregamos al final del payload el comando para hacer un downlink despues de enviar el mensaje
   _ATmessage+=",1";
   //Se manda el mensaje y una vez terminada la transmision se revisa el Serial para guardar el payload de respuesa
-  sendMessage();
-  char sendStatus[4];
-  Serial.readBytesUntil('\n', sendStatus, 4);
-  String  downlinkPayload = Serial.readStringUntil('\n');
-
-  if (verboseSerial==1){
-    Serial.println(sendStatus);
-    Serial.print("Donwlink data : ");
-    Serial.println(downlinkPayload);
-    Serial.println("++++++++++++++++++++++++++");
+  sendMessage(1);
+  //Limpiar la confirmacion de OK del modulo
+  _clearSerial();
+  while (Serial.available() == 0)
+  {
+    delay(100);
   }
 
+  char downlinkChars[31];
+  downlinkChars[31] = '\0';
+
+  char payloadChars[27];
+  Serial.readBytesUntil('%',downlinkChars, 30);
+  strcpy(payloadChars, downlinkChars+4);
+  //Leer el payload
+  String  downlinkPayload = payloadChars;
+
+  if (verboseSerial==1){
+    Serial.println("Donwlink data :");
+    Serial.println(downlinkChars);
+    Serial.println("-----------------------");
+  }
+
+  digitalWrite(_enablePin, LOW);
   return downlinkPayload;
 }
 

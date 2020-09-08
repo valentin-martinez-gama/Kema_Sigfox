@@ -32,9 +32,9 @@ void loop() {
   bool boolArray[8] = {0,0,0,0,0,0,0,0};
   //Se modifican algunos valores del Bool array antes de agregar payload
   //n es la variable de cuenta iteraciones del loop()
-  boolArray[2] = 1;
+  //boolArray[2] = 1;
   boolArray[n%8] = 1;
-  boolArray[7-n%2] = 1;
+  //boolArray[7-n%2] = 1;
   //Se agrega el arreglo de booleanos al payload.
   ejemplo.addBoolByte(boolArray);
 
@@ -51,9 +51,12 @@ void loop() {
   if (pendingDownlink){
     String dataString;
     dataString = ejemplo.requestDownlink();
-    downlinkData = dataString.toInt();
+    //downlinkData = dataString.toInt();
     pendingDownlink = false;
+    Serial.println("Mensaje de Downlink:");
+    Serial.println(dataString);
   }
+  
   // Si ya se hizo un downlink ya nadamas se manda un mensaje sin pedir respuesta
   else {
     ejemplo.sendMessage();

@@ -17,7 +17,7 @@ class Kema_Sigfox {
 
 		void setup(int pin_enable_wisol_module = 7);
 		void initPayload();
-		void sendMessage();
+		void sendMessage(bool waitToTurnOff = 0);
 		String  requestDownlink();
 		void addInt(long varInt, int intSize = 16);
 		void addFloat(float varFloat);
