@@ -1,0 +1,15 @@
+# Syntax Coloring Map For Kema_Sigfox
+
+# Datatypes (KEYWORD1)
+Kema_Sigfox	KEYWORD1
+
+# Methods and Functions (KEYWORD2)
+initPayload	KEYWORD2
+sendMessage KEYWORD2
+requestDownlink	KEYWORD2
+addInt		KEYWORD2
+addFloat	KEYWORD2
+addBoolByte	KEYWORD2
+getTemperature	KEYWORD2
+getATData	KEYWORD2
+verboseSerial	KEYWORD2
