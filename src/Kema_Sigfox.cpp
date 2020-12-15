@@ -7,6 +7,8 @@
 
 #include "Arduino.h"
 #include "Kema_Sigfox.h"
+#include <SoftwareSerial.h>
+SoftwareSerial mySerial(0, 1);
 
 int _enablePin;
 #define onDelay 500
@@ -81,34 +83,61 @@ void Kema_Sigfox::sendMessage(bool waitToTurnOff)
 }
 
 String Kema_Sigfox::requestDownlink(){
+  unsigned long x=0;
+  int c=0;
+  char downlinkChars[51];
+  char payloadChars[50];
   //Agregamos al final del payload el comando para hacer un downlink despues de enviar el mensaje
   _ATmessage+=",1";
+  digitalWrite(7, HIGH);
+  delay(1000);
+  //Reset del canal para asegurar que manda en la frecuencia correcta
+  Serial.print("AT$RC\n");
   //Se manda el mensaje y una vez terminada la transmision se revisa el Serial para guardar el payload de respuesa
-  sendMessage(1);
+  mySerial.print("\r\n\tSigfox-->");
+  mySerial.println(_ATmessage);
   //Limpiar la confirmacion de OK del modulo
-  _clearSerial();
-  while (Serial.available() == 0)
-  {
-    delay(100);
-  }
+  //_clearSerial();
 
-  char downlinkChars[31];
-  downlinkChars[31] = '\0';
-
-  char payloadChars[27];
-  Serial.readBytesUntil('%',downlinkChars, 30);
-  strcpy(payloadChars, downlinkChars+4);
-  //Leer el payload
-  String  downlinkPayload = payloadChars;
+ while( Serial.available() > 0) Serial.read();
+   x = 0;
+ memset(downlinkChars, '\0',sizeof(downlinkChars));
+ Serial.print(_ATmessage);
+ Serial.print("\r\n");
+ while(true)
+ {
+   //Serial.print(Serial.available() );
+   if(Serial.available() != 0)
+   {
+     downlinkChars[x] = Serial.read();
+     x++;
+     if (strstr(downlinkChars, "\n") != NULL)
+     {
+       c++;
+     }
+     if(x>33)
+     {
+       mySerial.print("Comando OK\n\r");
+       mySerial.println(downlinkChars);
+       break;
+     }
+   }
+ }
+ strcpy(payloadChars, downlinkChars);
+ digitalWrite(_enablePin, LOW);
+ //Leer el payload
+ String  downlinkPayload = payloadChars;
 
   if (verboseSerial==1){
-    Serial.println("Donwlink data :");
+    Serial.println("Downlink data :");
     Serial.println(downlinkChars);
     Serial.println("-----------------------");
   }
+  String altStr = downlinkPayload.substring(10); //Quitamos el OK devuelto por Sigfox y caracteres no pertenecientes al downlink
+  altStr.replace(" ", ""); //Quitamos los espacios entre los bytes
+  String altStr2 = altStr.substring(1,6); //Solamente extraemos los primeros 5 caracteres para obtener el nivel deseado
 
-  digitalWrite(_enablePin, LOW);
-  return downlinkPayload;
+  return altStr2;
 }
 
 

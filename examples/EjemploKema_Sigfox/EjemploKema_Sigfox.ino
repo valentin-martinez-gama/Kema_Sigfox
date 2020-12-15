@@ -25,6 +25,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
 
+   
   //Se inicializa un mensaje nuevo
   ejemplo.initPayload();
 
@@ -41,7 +42,7 @@ void loop() {
   //Se pida la temperatura del modulo Wisol y se divide entre 10 para tenerla en grados centigrados
   float tempModulo = (ejemplo.getTemperature())/10;
   ejemplo.addFloat(tempModulo);
-  
+
   String voltajeModulo = ejemplo.getATData("AT$V?");
   ejemplo.addInt(voltajeModulo.toInt());
 
@@ -51,12 +52,14 @@ void loop() {
   if (pendingDownlink){
     String dataString;
     dataString = ejemplo.requestDownlink();
-    //downlinkData = dataString.toInt();
     pendingDownlink = false;
-    Serial.println("Mensaje de Downlink:");
-    Serial.println(dataString);
+    Serial.println("$$$$$$$$$");
+    long num_down = dataString.toInt();//Primeros 5 caracteres del downlink
+    Serial.println(num_down);
+    Serial.println("$$$$$$$$$");
+
   }
-  
+
   // Si ya se hizo un downlink ya nadamas se manda un mensaje sin pedir respuesta
   else {
     ejemplo.sendMessage();
@@ -65,4 +68,5 @@ void loop() {
   n++;
   //Agregar una cuenta al contador de iteraciones y esperar 4s
   delay(4000);
+  
 }
